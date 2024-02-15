@@ -7,7 +7,9 @@ plugins {
 kotlin {
     applyDefaultHierarchyTemplate()
 
-    jvm()
+    jvm {
+        sourceSets["jvmMain"].resources.srcDirs("src/main/res")
+    }
 
     androidTarget {
         compilations.all {
@@ -48,6 +50,8 @@ kotlin {
 android {
     namespace = "com.example.myapplication.shared"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
+
+    sourceSets["main"].resources.srcDirs("src/main/res")
 
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
