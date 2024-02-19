@@ -1,8 +1,8 @@
-package com.example.myapplication.shared.welcome
+package com.example.myapplication.shared.editComponent
 
 import com.arkivanov.decompose.value.Value
 
-interface WelcomeComponent {
+interface EditComponent {
 
     val model: Value<Model>
 

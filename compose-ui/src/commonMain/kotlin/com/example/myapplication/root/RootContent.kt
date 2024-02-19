@@ -13,17 +13,20 @@ import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.fade
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.plus
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.scale
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.stackAnimation
+import com.example.myapplication.common.resources.text.getTypography
 import com.example.myapplication.main.MainContent
 import com.example.myapplication.shared.root.RootComponent
 import com.example.myapplication.shared.root.RootComponent.Child
-import com.example.myapplication.welcome.WelcomeContent
+import com.example.myapplication.edit.EditContent
 
 @Composable
 fun RootContent(
     component: RootComponent,
     modifier: Modifier = Modifier,
 ) {
-    MaterialTheme {
+    MaterialTheme(
+        typography = getTypography()
+    ) {
         Surface(modifier = modifier.fillMaxSize().windowInsetsPadding(WindowInsets.systemBars)) {
             Children(
                 stack = component.stack,
@@ -32,7 +35,7 @@ fun RootContent(
             ) {
                 when (val instance = it.instance) {
                     is Child.Main -> MainContent(component = instance.component)
-                    is Child.Welcome -> WelcomeContent(component = instance.component)
+                    is Child.EditItem -> EditContent(component = instance.component)
                 }
             }
         }

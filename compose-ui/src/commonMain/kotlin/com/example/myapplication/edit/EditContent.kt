@@ -1,4 +1,4 @@
-package com.example.myapplication.welcome
+package com.example.myapplication.edit
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,11 +18,11 @@ import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.example.myapplication.common.views.TextBold14
 import com.example.myapplication.common.views.TextMedium14
-import com.example.myapplication.shared.welcome.WelcomeComponent
+import com.example.myapplication.shared.editComponent.EditComponent
 
 @Composable
-internal fun WelcomeContent(
-    component: WelcomeComponent,
+internal fun EditContent(
+    component: EditComponent,
     modifier: Modifier = Modifier,
 ) {
     val model by component.model.subscribeAsState()
