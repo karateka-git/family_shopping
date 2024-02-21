@@ -2,15 +2,12 @@ package com.example.myapplication.edit
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -20,31 +17,21 @@ import com.example.myapplication.common.views.TextBold14
 import com.example.myapplication.common.views.TextMedium14
 import com.example.myapplication.shared.editComponent.EditComponent
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun EditContent(
-    component: EditComponent,
-    modifier: Modifier = Modifier,
-) {
+fun BottomEditContent(component: EditComponent) {
     val model by component.model.subscribeAsState()
 
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = { Text(text = "Welcome Screen") },
-                navigationIcon = {
-                    IconButton(onClick = component::onBackClicked) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back button",
-                        )
-                    }
-                },
-            )
+    val sheetState = rememberModalBottomSheetState()
+    ModalBottomSheet(
+        onDismissRequest = {
+            component.onBackClicked()
         },
+        sheetState = sheetState
     ) {
+        Text(model.greetingText)
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {

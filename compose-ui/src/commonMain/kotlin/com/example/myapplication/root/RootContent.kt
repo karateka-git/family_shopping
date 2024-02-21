@@ -17,7 +17,6 @@ import com.example.myapplication.common.resources.text.getTypography
 import com.example.myapplication.main.MainContent
 import com.example.myapplication.shared.root.RootComponent
 import com.example.myapplication.shared.root.RootComponent.Child
-import com.example.myapplication.edit.EditContent
 
 @Composable
 fun RootContent(
@@ -35,7 +34,6 @@ fun RootContent(
             ) {
                 when (val instance = it.instance) {
                     is Child.Main -> MainContent(component = instance.component)
-                    is Child.EditItem -> EditContent(component = instance.component)
                 }
             }
         }

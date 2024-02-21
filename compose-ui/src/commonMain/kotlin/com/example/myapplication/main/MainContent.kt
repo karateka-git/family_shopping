@@ -30,6 +30,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
+import com.example.myapplication.edit.BottomEditContent
 import com.example.myapplication.shared.main.MainComponent
 import com.example.myapplication.shared.models.ShoppingItem
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -40,6 +41,9 @@ internal fun MainContent(
     component: MainComponent,
     modifier: Modifier = Modifier,
 ) {
+    val bottomSlot by component.bottomStack.subscribeAsState()
+    BottomChildContent(bottomSlot.child?.instance)
+
     val state by component.state.subscribeAsState()
 
     val listState = rememberLazyListState()
@@ -67,6 +71,14 @@ internal fun MainContent(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun BottomChildContent(child: MainComponent.BottomChild?) {
+    when(child) {
+        is MainComponent.BottomChild.BottomEditItem -> BottomEditContent(child.component)
+        null -> {}
     }
 }
 
@@ -114,10 +126,10 @@ private fun LazyListState.observeScrollingUp(previousState: Boolean, action: (Bo
 @Composable
 fun ShoppingItemView(
     item: ShoppingItem,
-    onItemClick: (id: String) -> Unit,
+    onItemClick: (item: ShoppingItem) -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().clickable { onItemClick(item.id) }.padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth().clickable { onItemClick(item) }.padding(horizontal = 16.dp),
     ) {
         Text(modifier = Modifier.weight(1f), text = item.text)
         Checkbox(checked = item.isChecked, onCheckedChange = {})
