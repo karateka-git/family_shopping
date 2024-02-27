@@ -4,7 +4,7 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
-import com.example.myapplication.shared.editComponent.EditComponent.Model
+import com.example.myapplication.shared.editComponent.EditComponent.EditState
 
 class DefaultEditComponent(
     private val componentContext: ComponentContext,
@@ -13,12 +13,8 @@ class DefaultEditComponent(
 ) : EditComponent, ComponentContext by componentContext {
 
     // Consider preserving and managing the state via a store
-    private val state = MutableValue(Model())
-    override val model: Value<Model> = state
-
-    override fun onUpdateGreetingText() {
-        state.update { it.copy(greetingText = "Edit item with id $itemId") }
-    }
+    private val _state = MutableValue(EditState())
+    override val state: Value<EditState> = _state
 
     override fun onBackClicked() {
         onFinished()

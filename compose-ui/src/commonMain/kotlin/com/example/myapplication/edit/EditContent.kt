@@ -43,7 +43,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomEditContent(component: EditComponent) {
-    val model by component.model.subscribeAsState()
+    val state by component.state.subscribeAsState()
 
     val sheetState: SheetState = rememberModalBottomSheetState()
     var expandedProgress by remember { mutableStateOf(0f) }
@@ -105,15 +105,7 @@ fun BottomEditContent(component: EditComponent) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
-                Text(model.greetingText)
 
-                Button(
-                    onClick = { component.onUpdateGreetingText() },
-                ) {
-                    Text(model.greetingText)
-                }
-                TextMedium14(text = "Medium 14")
-                TextBold14(text = "Bold 14")
             }
         }
     }
