@@ -14,10 +14,14 @@ import com.arkivanov.essenty.parcelable.Parcelize
 import com.example.myapplication.shared.editComponent.DefaultEditComponent
 import com.example.myapplication.shared.editComponent.EditComponent
 import com.example.myapplication.shared.models.ShoppingItem
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 class DefaultMainComponent(
     componentContext: ComponentContext,
-) : MainComponent, ComponentContext by componentContext {
+) : MainComponent, ComponentContext by componentContext, KoinComponent {
+
+    private val mainInteractor: MainInteractor by inject<MainInteractor>()
 
     private val bottomNavigation = SlotNavigation<BottomConfig>()
 
@@ -31,24 +35,7 @@ class DefaultMainComponent(
     override val state: MutableValue<MainComponent.StateUI> =
         MutableValue(
             MainComponent.StateUI(
-                items = listOf(
-                    ShoppingItem("1", "test", false),
-                    ShoppingItem("1", "test", false),
-                    ShoppingItem("1", "test", false),
-                    ShoppingItem("1", "test", false),
-                    ShoppingItem("1", "test", false),
-                    ShoppingItem("1", "test", false),
-                    ShoppingItem("1", "test", false),
-                    ShoppingItem("1", "test", false),
-                    ShoppingItem("1", "test", false),
-                    ShoppingItem("1", "test", false),
-                    ShoppingItem("1", "test", false),
-                    ShoppingItem("1", "test", false),
-                    ShoppingItem("1", "test", false),
-                    ShoppingItem("1", "test", false),
-                    ShoppingItem("1", "test", false),
-                    ShoppingItem("1", "test", false),
-                ),
+                items = mainInteractor.getItems(),
                 newItemText = ""
             )
         )

@@ -37,6 +37,7 @@ kotlin {
             dependencies {
                 api(libs.decompose.decompose)
                 api(libs.essenty.lifecycle)
+                api(libs.koin.core)
             }
         }
         val commonTest by getting {
@@ -50,6 +51,10 @@ kotlin {
 android {
     namespace = "com.example.myapplication.shared"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
+
+    dependencies {
+        api(libs.koin.android)
+    }
 
     sourceSets["main"].resources.srcDirs("src/main/res")
 

@@ -105,7 +105,12 @@ fun BottomEditContent(component: EditComponent) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
-
+                when {
+                    state.error != null -> TextMedium14(text = state.error.toString())
+                    else -> {
+                        TextMedium14(text = state.item.text)
+                    }
+                }
             }
         }
     }

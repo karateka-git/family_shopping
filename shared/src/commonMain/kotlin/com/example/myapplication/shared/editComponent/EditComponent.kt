@@ -10,6 +10,8 @@ interface EditComponent {
     fun onBackClicked()
 
     data class EditState(
+        // TODO можно сделать Exception, но надо подумать как обработать
+        val error: String? = null,
         val item: ShoppingItem = ShoppingItem(),
     )
 }

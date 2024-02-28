@@ -6,7 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.core.view.WindowCompat
 import com.arkivanov.decompose.defaultComponentContext
 import com.example.myapplication.root.RootContent
+import com.example.myapplication.shared.di.initKoin
 import com.example.myapplication.shared.root.DefaultRootComponent
+import org.koin.android.ext.koin.androidContext
 
 class MainActivity : ComponentActivity() {
 
@@ -14,6 +16,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        initKoin() {
+            androidContext(applicationContext)
+        }
 
         val root = DefaultRootComponent(componentContext = defaultComponentContext())
 
