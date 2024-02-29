@@ -11,7 +11,7 @@ import org.koin.core.component.inject
 
 class DefaultEditComponent(
     private val componentContext: ComponentContext,
-    private val itemId: String,
+    private val itemId: String? = null,
     private val onFinished: () -> Unit,
 ) : EditComponent, ComponentContext by componentContext, KoinComponent {
 
@@ -24,13 +24,29 @@ class DefaultEditComponent(
     override val state: Value<EditState> = _state
 
     init {
-        val item = mainInteractor.getItem(itemId)
+        if (itemId != null) {
+            val item = mainInteractor.getItem(itemId)
 
-        if (item == null) {
-            _state.update { it.copy(error = "Что-то пошло не так..") }
-        } else {
-            _state.update { it.copy(item = item) }
+            if (item == null) {
+                _state.update { it.copy(error = "Что-то пошло не так..", editMode = EditMode.EDIT) }
+            } else {
+                _state.update { it.copy(item = item, editMode = EditMode.EDIT) }
+            }
         }
+    }
+
+    override fun onUpdateItem(text: String) {
+        _state.update { it.copy(item = it.item.copy(text = text)) }
+    }
+
+    override fun onUpdateItem() {
+        mainInteractor.updateItem(_state.value.item)
+        onBackClicked()
+    }
+
+    override fun onCreateNewItem() {
+        mainInteractor.createNewItem(_state.value.item)
+        onBackClicked()
     }
     override fun onBackClicked() {
         onFinished()

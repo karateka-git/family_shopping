@@ -12,10 +12,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
-import androidx.compose.material.Text
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,13 +29,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.example.myapplication.common.resources.icons.AppIcons
 import com.example.myapplication.common.resources.icons.painter
-import com.example.myapplication.common.views.TextBold14
 import com.example.myapplication.common.views.TextMedium14
 import com.example.myapplication.shared.editComponent.EditComponent
+import com.example.myapplication.shared.editComponent.EditMode
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -44,6 +46,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun BottomEditContent(component: EditComponent) {
     val state by component.state.subscribeAsState()
+    var textFieldValue by remember { mutableStateOf(TextFieldValue(state.item.text)) }
+    LaunchedEffect(Unit) {
+        snapshotFlow { textFieldValue }
+            .collectLatest {
+                component.onUpdateItem(text = it.text)
+            }
+    }
 
     val sheetState: SheetState = rememberModalBottomSheetState()
     var expandedProgress by remember { mutableStateOf(0f) }
@@ -108,7 +117,23 @@ fun BottomEditContent(component: EditComponent) {
                 when {
                     state.error != null -> TextMedium14(text = state.error.toString())
                     else -> {
-                        TextMedium14(text = state.item.text)
+                        TextField(
+                            value = textFieldValue,
+                            onValueChange = { textFieldValue = it }
+                        )
+                        Button(onClick = {
+                            when (state.editMode) {
+                                EditMode.EDIT -> component.onUpdateItem()
+                                EditMode.CREATE_NEW -> component.onCreateNewItem()
+                            }
+                        }) {
+                            TextMedium14(
+                                text = when (state.editMode) {
+                                    EditMode.EDIT -> "Сохранить"
+                                    EditMode.CREATE_NEW -> "Создать"
+                                }
+                            )
+                        }
                     }
                 }
             }

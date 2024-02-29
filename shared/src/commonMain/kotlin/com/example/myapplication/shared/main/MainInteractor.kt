@@ -3,7 +3,7 @@ package com.example.myapplication.shared.main
 import com.example.myapplication.shared.models.ShoppingItem
 
 class MainInteractor {
-    private val mockItems = listOf(
+    private val mockItems = mutableListOf(
         ShoppingItem("1", "один", false),
         ShoppingItem("2", "два", false),
         ShoppingItem("3", "три", false),
@@ -24,7 +24,33 @@ class MainInteractor {
 
     fun getItems() = mockItems
 
+    fun onChangeCheckedState(id: String) {
+        val index = mockItems.indexOfFirst { it.id == id }
+        if (index > -1) {
+            val item = mockItems.get(index)
+            mockItems.set(
+                index = index,
+                item.copy(isChecked = item.isChecked.not())
+            )
+        }
+    }
+
     fun getItem(id: String): ShoppingItem? {
         return mockItems.firstOrNull { id == it.id }
+    }
+
+    fun updateItem(newItem: ShoppingItem) {
+        val index = mockItems.indexOfFirst { it.id == newItem.id }
+        if (index > -1) {
+            mockItems.set(
+                index = index,
+                newItem
+            )
+        }
+    }
+
+    fun createNewItem(item: ShoppingItem) {
+        val index = mockItems.size + 1
+        mockItems.add(item.copy(id = index.toString()))
     }
 }

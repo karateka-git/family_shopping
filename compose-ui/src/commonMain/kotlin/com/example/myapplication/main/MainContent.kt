@@ -68,6 +68,7 @@ internal fun MainContent(
                 ShoppingItemView(
                     item = item,
                     onItemClick = component::onEditItem,
+                    onChangeCheckedState = component::onChangeChecked,
                 )
             }
         }
@@ -127,12 +128,13 @@ private fun LazyListState.observeScrollingUp(previousState: Boolean, action: (Bo
 fun ShoppingItemView(
     item: ShoppingItem,
     onItemClick: (item: ShoppingItem) -> Unit,
+    onChangeCheckedState: (id: String) -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().clickable { onItemClick(item) }.padding(horizontal = 16.dp),
     ) {
         Text(modifier = Modifier.weight(1f), text = item.text)
-        Checkbox(checked = item.isChecked, onCheckedChange = {})
+        Checkbox(checked = item.isChecked, onCheckedChange = { onChangeCheckedState(item.id) })
     }
 }
 

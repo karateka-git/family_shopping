@@ -7,19 +7,17 @@ import com.example.myapplication.shared.models.ShoppingItem
 
 interface MainComponent {
     val bottomStack: Value<ChildSlot<*, BottomChild>>
-    val state: Value<StateUI>
+    val state: Value<MainState>
 
     fun updateFABVisibleState(isVisible: Boolean)
     fun createNewItem()
-    fun onAddItem(text: String)
     fun onRemoveItem(id: String)
     fun onChangeChecked(id: String)
     fun onEditItem(item: ShoppingItem)
 
-    data class StateUI(
-        val items: List<ShoppingItem>,
+    data class MainState(
+        val items: List<ShoppingItem> = emptyList(),
         val isVisibleFAB: Boolean = true,
-        val newItemText: String,
     )
 
     sealed class BottomChild {

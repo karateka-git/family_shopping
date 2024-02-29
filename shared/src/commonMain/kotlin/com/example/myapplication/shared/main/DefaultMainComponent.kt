@@ -13,6 +13,7 @@ import com.arkivanov.essenty.parcelable.Parcelable
 import com.arkivanov.essenty.parcelable.Parcelize
 import com.example.myapplication.shared.editComponent.DefaultEditComponent
 import com.example.myapplication.shared.editComponent.EditComponent
+import com.example.myapplication.shared.main.MainComponent.MainState
 import com.example.myapplication.shared.models.ShoppingItem
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -31,25 +32,19 @@ class DefaultMainComponent(
             key = "BottomSlot",
             childFactory = ::bottomChild
         )
+    private val _state = MutableValue(MainState())
+    override val state: MutableValue<MainState> = _state
 
-    override val state: MutableValue<MainComponent.StateUI> =
-        MutableValue(
-            MainComponent.StateUI(
-                items = mainInteractor.getItems(),
-                newItemText = ""
-            )
-        )
+    init {
+        _state.update { it.copy(items = mainInteractor.getItems()) }
+    }
 
     override fun updateFABVisibleState(isVisible: Boolean) {
         state.update { it.copy(isVisibleFAB = isVisible) }
     }
 
     override fun createNewItem() {
-
-    }
-
-    override fun onAddItem(text: String) {
-        TODO("Not yet implemented")
+        bottomNavigation.activate(BottomConfig.BottomEditItemConfig())
     }
 
     override fun onRemoveItem(id: String) {
@@ -57,7 +52,7 @@ class DefaultMainComponent(
     }
 
     override fun onChangeChecked(id: String) {
-        TODO("Not yet implemented")
+        mainInteractor.onChangeCheckedState(id)
     }
 
     override fun onEditItem(item: ShoppingItem) {
@@ -70,7 +65,7 @@ class DefaultMainComponent(
                 MainComponent.BottomChild.BottomEditItem(editComponent(bottomComponentContext, config.itemId))
         }
 
-    private fun editComponent(componentContext: ComponentContext, itemId: String): EditComponent =
+    private fun editComponent(componentContext: ComponentContext, itemId: String?): EditComponent =
         DefaultEditComponent(
             componentContext = componentContext,
             itemId = itemId,
@@ -81,6 +76,6 @@ class DefaultMainComponent(
 
     private sealed interface BottomConfig : Parcelable {
         @Parcelize
-        data class BottomEditItemConfig(val itemId: String) : BottomConfig
+        data class BottomEditItemConfig(val itemId: String? = null) : BottomConfig
     }
 }
