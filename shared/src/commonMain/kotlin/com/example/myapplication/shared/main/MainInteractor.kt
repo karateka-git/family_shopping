@@ -3,7 +3,7 @@ package com.example.myapplication.shared.main
 import com.example.myapplication.shared.models.ShoppingItem
 
 class MainInteractor {
-    private val mockItems = mutableListOf(
+    private var mockItems = listOf(
         ShoppingItem("1", "один", false),
         ShoppingItem("2", "два", false),
         ShoppingItem("3", "три", false),
@@ -25,13 +25,17 @@ class MainInteractor {
     fun getItems() = mockItems
 
     fun onChangeCheckedState(id: String) {
-        val index = mockItems.indexOfFirst { it.id == id }
+        val newItems = mutableListOf<ShoppingItem>().apply {
+            addAll(mockItems)
+        }
+        val index = newItems.indexOfFirst { it.id == id }
         if (index > -1) {
-            val item = mockItems.get(index)
-            mockItems.set(
+            val item = newItems.get(index)
+            newItems.set(
                 index = index,
                 item.copy(isChecked = item.isChecked.not())
             )
+            mockItems = newItems
         }
     }
 
@@ -40,17 +44,23 @@ class MainInteractor {
     }
 
     fun updateItem(newItem: ShoppingItem) {
-        val index = mockItems.indexOfFirst { it.id == newItem.id }
+        val newItems = mockItems as MutableList
+        val index = newItems.indexOfFirst { it.id == newItem.id }
         if (index > -1) {
-            mockItems.set(
+            newItems.set(
                 index = index,
                 newItem
             )
         }
+        mockItems = newItems
     }
 
     fun createNewItem(item: ShoppingItem) {
-        val index = mockItems.size + 1
-        mockItems.add(item.copy(id = index.toString()))
+        val newItems = mutableListOf<ShoppingItem>().apply {
+            addAll(mockItems)
+        }
+        val index = newItems.size + 1
+        newItems.add(item.copy(id = index.toString()))
+        mockItems = newItems
     }
 }

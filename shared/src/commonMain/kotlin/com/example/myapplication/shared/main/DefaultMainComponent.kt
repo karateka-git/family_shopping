@@ -13,6 +13,7 @@ import com.arkivanov.essenty.parcelable.Parcelable
 import com.arkivanov.essenty.parcelable.Parcelize
 import com.example.myapplication.shared.editComponent.DefaultEditComponent
 import com.example.myapplication.shared.editComponent.EditComponent
+import com.example.myapplication.shared.editComponent.EditMode
 import com.example.myapplication.shared.main.MainComponent.MainState
 import com.example.myapplication.shared.models.ShoppingItem
 import org.koin.core.component.KoinComponent
@@ -43,32 +44,53 @@ class DefaultMainComponent(
         state.update { it.copy(isVisibleFAB = isVisible) }
     }
 
-    override fun createNewItem() {
-        bottomNavigation.activate(BottomConfig.BottomEditItemConfig())
-    }
-
     override fun onRemoveItem(id: String) {
         TODO("Not yet implemented")
     }
 
     override fun onChangeChecked(id: String) {
         mainInteractor.onChangeCheckedState(id)
+
+        val items = mutableListOf<ShoppingItem>().apply { addAll(_state.value.items) }
+        val index = items.indexOfFirst { it.id == id }
+        if (index > -1) {
+            val item = items.get(index)
+            items.set(
+                index = index,
+                item.copy(isChecked = item.isChecked.not())
+            )
+        }
+        _state.update { it.copy(items = items) }
     }
 
-    override fun onEditItem(item: ShoppingItem) {
-        bottomNavigation.activate(BottomConfig.BottomEditItemConfig(item.id))
+    override fun openEditView(mode: EditMode) {
+        bottomNavigation.activate(BottomConfig.BottomEditItemConfig(mode))
     }
 
     private fun bottomChild(config: BottomConfig, bottomComponentContext: ComponentContext): MainComponent.BottomChild =
         when (config) {
             is BottomConfig.BottomEditItemConfig ->
-                MainComponent.BottomChild.BottomEditItem(editComponent(bottomComponentContext, config.itemId))
+                MainComponent.BottomChild.BottomEditItem(editComponent(bottomComponentContext, config.mode))
         }
 
-    private fun editComponent(componentContext: ComponentContext, itemId: String?): EditComponent =
+    private fun editComponent(componentContext: ComponentContext, mode: EditMode): EditComponent =
         DefaultEditComponent(
             componentContext = componentContext,
-            itemId = itemId,
+            mode = mode,
+            onApplyEditItem = { item ->
+                val items = mutableListOf<ShoppingItem>().apply { addAll(_state.value.items) }
+                when (mode) {
+                    is EditMode.CreateNew -> {
+                        _state.update { it.copy(items = items.apply { add(item) }) }
+                    }
+                    is EditMode.Edit -> {
+                        val index = items.indexOfFirst { it.id == item.id }
+                        if (index > -1) {
+                            _state.update { it.copy(items = items.apply { set(index, item) }) }
+                        }
+                    }
+                }
+            },
             onFinished = {
                 bottomNavigation.dismiss()
             },
@@ -76,6 +98,6 @@ class DefaultMainComponent(
 
     private sealed interface BottomConfig : Parcelable {
         @Parcelize
-        data class BottomEditItemConfig(val itemId: String? = null) : BottomConfig
+        data class BottomEditItemConfig(val mode: EditMode) : BottomConfig
     }
 }

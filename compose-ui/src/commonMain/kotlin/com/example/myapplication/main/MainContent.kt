@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.example.myapplication.edit.BottomEditContent
+import com.example.myapplication.shared.editComponent.EditMode
 import com.example.myapplication.shared.main.MainComponent
 import com.example.myapplication.shared.models.ShoppingItem
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -57,7 +58,7 @@ internal fun MainContent(
             )
         },
         floatingActionButton = {
-            ShoppingFloatingActionButton(state.isVisibleFAB, component::createNewItem)
+            ShoppingFloatingActionButton(state.isVisibleFAB) { component.openEditView(EditMode.CreateNew) }
         },
     ) {
         LazyColumn(
@@ -67,7 +68,7 @@ internal fun MainContent(
             items(state.items) { item ->
                 ShoppingItemView(
                     item = item,
-                    onItemClick = component::onEditItem,
+                    onItemClick = { component.openEditView(EditMode.Edit(it.id)) },
                     onChangeCheckedState = component::onChangeChecked,
                 )
             }

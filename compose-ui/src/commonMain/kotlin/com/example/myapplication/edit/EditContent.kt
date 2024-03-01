@@ -122,15 +122,13 @@ fun BottomEditContent(component: EditComponent) {
                             onValueChange = { textFieldValue = it }
                         )
                         Button(onClick = {
-                            when (state.editMode) {
-                                EditMode.EDIT -> component.onUpdateItem()
-                                EditMode.CREATE_NEW -> component.onCreateNewItem()
-                            }
+                            component.onApplyEdit()
+
                         }) {
                             TextMedium14(
                                 text = when (state.editMode) {
-                                    EditMode.EDIT -> "Сохранить"
-                                    EditMode.CREATE_NEW -> "Создать"
+                                    is EditMode.Edit -> "Сохранить"
+                                    is EditMode.CreateNew -> "Создать"
                                 }
                             )
                         }
