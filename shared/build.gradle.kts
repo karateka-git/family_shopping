@@ -37,7 +37,16 @@ kotlin {
             dependencies {
                 api(libs.decompose.decompose)
                 api(libs.essenty.lifecycle)
+                api(libs.mvi.kotlin)
+                api(libs.mvi.kotlin.main)
+                api(libs.mvi.kotlin.coroutine.ext)
                 api(libs.koin.core)
+                api(libs.coroutine.core)
+            }
+        }
+        val jvmMain by getting {
+            dependencies {
+                api(libs.coroutine.swing)
             }
         }
         val commonTest by getting {
