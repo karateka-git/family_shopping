@@ -55,12 +55,13 @@ class MainInteractor {
         mockItems = newItems
     }
 
-    fun createNewItem(item: ShoppingItem) {
+    fun createNewItem(item: ShoppingItem): ShoppingItem {
         val newItems = mutableListOf<ShoppingItem>().apply {
             addAll(mockItems)
         }
-        val index = newItems.size + 1
-        newItems.add(item.copy(id = index.toString()))
+        val newItem = item.copy(id = (newItems.size + 1).toString())
+        newItems.add(newItem)
         mockItems = newItems
+        return newItem
     }
 }

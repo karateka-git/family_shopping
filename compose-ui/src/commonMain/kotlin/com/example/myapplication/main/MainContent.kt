@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.example.myapplication.edit.BottomEditContent
-import com.example.myapplication.shared.editComponent.EditMode
 import com.example.myapplication.shared.main.MainComponent
 import com.example.myapplication.shared.models.ShoppingItem
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -45,7 +45,7 @@ internal fun MainContent(
     val bottomSlot by component.bottomStack.subscribeAsState()
     BottomChildContent(bottomSlot.child?.instance)
 
-    val state by component.state.subscribeAsState()
+    val state by component.state.collectAsState()
 
     val listState = rememberLazyListState()
     listState.observeScrollingUp(state.isVisibleFAB, component::updateFABVisibleState)
@@ -58,7 +58,7 @@ internal fun MainContent(
             )
         },
         floatingActionButton = {
-            ShoppingFloatingActionButton(state.isVisibleFAB) { component.openEditView(EditMode.CreateNew) }
+            ShoppingFloatingActionButton(state.isVisibleFAB) { component.onCreateNewItem() }
         },
     ) {
         LazyColumn(
@@ -68,8 +68,10 @@ internal fun MainContent(
             items(state.items) { item ->
                 ShoppingItemView(
                     item = item,
-                    onItemClick = { component.openEditView(EditMode.Edit(it.id)) },
-                    onChangeCheckedState = component::onChangeChecked,
+                    onItemClick = { id, currentIsChecked ->  component.onEditItem(id, currentIsChecked) },
+                    onChangeCheckedState = { isChecked ->
+                        component.updateItem(item.copy(isChecked = isChecked))
+                    },
                 )
             }
         }
@@ -125,17 +127,30 @@ private fun LazyListState.observeScrollingUp(previousState: Boolean, action: (Bo
     }
 }
 
+/**
+ * @param onItemClick
+ * - currentIsChecked
+ * Чтобы избежать ситуации когда при переходе на экран `Edit`,
+ * неправильное значение isChecked.
+ * Такое возможно при долгом сохранении (если к примеру добавлю бэк).
+ */
 @Composable
 fun ShoppingItemView(
     item: ShoppingItem,
-    onItemClick: (item: ShoppingItem) -> Unit,
-    onChangeCheckedState: (id: String) -> Unit,
+    onItemClick: (id: String, currentIsChecked: Boolean) -> Unit,
+    onChangeCheckedState: (newIsCheckedState: Boolean) -> Unit,
 ) {
+    var isChecked by remember { mutableStateOf(item.isChecked) }
     Row(
-        modifier = Modifier.fillMaxWidth().clickable { onItemClick(item) }.padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth().clickable {
+            onItemClick(item.id, isChecked)
+        }.padding(horizontal = 16.dp),
     ) {
         Text(modifier = Modifier.weight(1f), text = item.text)
-        Checkbox(checked = item.isChecked, onCheckedChange = { onChangeCheckedState(item.id) })
+        Checkbox(checked = isChecked, onCheckedChange = {
+            isChecked = isChecked.not()
+            onChangeCheckedState(isChecked)
+        })
     }
 }
 

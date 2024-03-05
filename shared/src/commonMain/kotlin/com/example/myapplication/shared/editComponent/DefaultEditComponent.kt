@@ -35,7 +35,7 @@ class DefaultEditComponent(
                 if (item == null) {
                     _state.update { it.copy(error = "Что-то пошло не так..", editMode = mode) }
                 } else {
-                    _state.update { it.copy(item = item, editMode = mode) }
+                    _state.update { it.copy(item = item.copy(isChecked = mode.isChecked), editMode = mode) }
                 }
             }
         }
@@ -46,11 +46,15 @@ class DefaultEditComponent(
     }
 
     override fun onApplyEdit() {
-        when (_state.value.editMode) {
-            is EditMode.Edit -> mainInteractor.updateItem(_state.value.item)
-            is EditMode.CreateNew -> mainInteractor.createNewItem(_state.value.item)
+        val currentItem = _state.value.item
+        val appliedItem = when (_state.value.editMode) {
+            is EditMode.Edit -> {
+                mainInteractor.updateItem(currentItem)
+                currentItem
+            }
+            is EditMode.CreateNew -> mainInteractor.createNewItem(currentItem)
         }
-        onApplyEditItem(_state.value.item)
+        onApplyEditItem(appliedItem)
         onBackClicked()
     }
     override fun onBackClicked() {

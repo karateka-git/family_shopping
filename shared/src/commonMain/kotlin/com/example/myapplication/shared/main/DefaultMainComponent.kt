@@ -8,22 +8,46 @@ import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
-import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.parcelable.Parcelable
 import com.arkivanov.essenty.parcelable.Parcelize
+import com.arkivanov.mvikotlin.core.binder.BinderLifecycleMode
+import com.arkivanov.mvikotlin.core.instancekeeper.getStore
+import com.arkivanov.mvikotlin.core.store.StoreFactory
+import com.arkivanov.mvikotlin.extensions.coroutines.bind
+import com.arkivanov.mvikotlin.extensions.coroutines.labels
+import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.example.myapplication.shared.editComponent.DefaultEditComponent
 import com.example.myapplication.shared.editComponent.EditComponent
 import com.example.myapplication.shared.editComponent.EditMode
 import com.example.myapplication.shared.main.MainComponent.MainState
+import com.example.myapplication.shared.main.store.MainStore
+import com.example.myapplication.shared.main.store.MainStoreProvider
 import com.example.myapplication.shared.models.ShoppingItem
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
+import com.example.myapplication.shared.util.appDispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.StateFlow
 
 class DefaultMainComponent(
     componentContext: ComponentContext,
-) : MainComponent, ComponentContext by componentContext, KoinComponent {
+    storeFactory: StoreFactory,
+) : MainComponent, ComponentContext by componentContext{
 
-    private val mainInteractor: MainInteractor by inject<MainInteractor>()
+    private val mainStore =
+        instanceKeeper.getStore {
+            MainStoreProvider(
+                storeFactory = storeFactory,
+            ).provide()
+        }
+
+    init {
+        bind(componentContext.lifecycle, BinderLifecycleMode.CREATE_DESTROY, appDispatchers.main) {
+            mainStore.labels.bindTo {
+                when(it) {
+                    is MainStore.Label.OpenEditView -> bottomNavigation.activate(BottomConfig.BottomEditItemConfig(it.mode))
+                }
+            }
+        }
+    }
 
     private val bottomNavigation = SlotNavigation<BottomConfig>()
 
@@ -34,37 +58,28 @@ class DefaultMainComponent(
             childFactory = ::bottomChild
         )
     private val _state = MutableValue(MainState())
-    override val state: MutableValue<MainState> = _state
 
-    init {
-        _state.update { it.copy(items = mainInteractor.getItems()) }
-    }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override val state: StateFlow<MainStore.State> = mainStore.stateFlow
 
     override fun updateFABVisibleState(isVisible: Boolean) {
-        state.update { it.copy(isVisibleFAB = isVisible) }
+        mainStore.accept(MainStore.Intent.UpdateFABVisibleState(isVisible))
     }
 
     override fun onRemoveItem(id: String) {
         TODO("Not yet implemented")
     }
 
-    override fun onChangeChecked(id: String) {
-        mainInteractor.onChangeCheckedState(id)
-
-        val items = mutableListOf<ShoppingItem>().apply { addAll(_state.value.items) }
-        val index = items.indexOfFirst { it.id == id }
-        if (index > -1) {
-            val item = items.get(index)
-            items.set(
-                index = index,
-                item.copy(isChecked = item.isChecked.not())
-            )
-        }
-        _state.update { it.copy(items = items) }
+    override fun updateItem(item: ShoppingItem) {
+        mainStore.accept(MainStore.Intent.UpdateItem(item))
     }
 
-    override fun openEditView(mode: EditMode) {
-        bottomNavigation.activate(BottomConfig.BottomEditItemConfig(mode))
+    override fun onEditItem(id: String, isChecked: Boolean) {
+        mainStore.accept(MainStore.Intent.EditItem(id, isChecked))
+    }
+
+    override fun onCreateNewItem() {
+        mainStore.accept(MainStore.Intent.CreateNewItem)
     }
 
     private fun bottomChild(config: BottomConfig, bottomComponentContext: ComponentContext): MainComponent.BottomChild =
@@ -78,16 +93,12 @@ class DefaultMainComponent(
             componentContext = componentContext,
             mode = mode,
             onApplyEditItem = { item ->
-                val items = mutableListOf<ShoppingItem>().apply { addAll(_state.value.items) }
                 when (mode) {
                     is EditMode.CreateNew -> {
-                        _state.update { it.copy(items = items.apply { add(item) }) }
+                        mainStore.accept(MainStore.Intent.AddItem(item))
                     }
                     is EditMode.Edit -> {
-                        val index = items.indexOfFirst { it.id == item.id }
-                        if (index > -1) {
-                            _state.update { it.copy(items = items.apply { set(index, item) }) }
-                        }
+                        updateItem(item)
                     }
                 }
             },

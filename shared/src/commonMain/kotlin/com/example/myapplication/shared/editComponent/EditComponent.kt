@@ -1,6 +1,7 @@
 package com.example.myapplication.shared.editComponent
 
 import com.arkivanov.decompose.value.Value
+import com.arkivanov.essenty.parcelable.Parcelable
 import com.arkivanov.essenty.parcelable.Parcelize
 import com.example.myapplication.shared.models.ShoppingItem
 
@@ -21,7 +22,7 @@ interface EditComponent {
 }
 
 @Parcelize
-sealed interface EditMode {
+sealed interface EditMode: Parcelable {
     data object CreateNew: EditMode
-    class Edit(val itemId: String) : EditMode
+    class Edit(val itemId: String, val isChecked: Boolean) : EditMode
 }

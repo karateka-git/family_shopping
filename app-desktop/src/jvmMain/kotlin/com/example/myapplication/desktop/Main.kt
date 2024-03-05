@@ -7,6 +7,7 @@ import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.jetbrains.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.example.myapplication.root.RootContent
 import com.example.myapplication.shared.di.initKoin
 import com.example.myapplication.shared.root.DefaultRootComponent
@@ -21,6 +22,7 @@ fun main() {
     val root = runOnUiThread {
         DefaultRootComponent(
             componentContext = DefaultComponentContext(lifecycle = lifecycle),
+            storeFactory = DefaultStoreFactory(),
         )
     }
 
