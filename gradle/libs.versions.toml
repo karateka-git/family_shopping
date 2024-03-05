@@ -15,8 +15,11 @@ androidx-activityCompose = "1.8.0"
 
 decompose = "2.1.4-compose-experimental"
 essenty = "1.2.0"
+mviKotlin = "3.3.0"
 
 koin = "3.5.3"
+
+coroutine = "1.8.0"
 
 [plugins]
 
@@ -34,7 +37,14 @@ androidx-activity-activityCompose = { group = "androidx.activity", name = "activ
 decompose-decompose = { group = "com.arkivanov.decompose", name = "decompose", version.ref = "decompose" }
 decompose-extensionsComposeJetbrains = { group = "com.arkivanov.decompose", name = "extensions-compose-jetbrains", version.ref = "decompose" }
 
+mvi-kotlin = { group = "com.arkivanov.mvikotlin", name = "mvikotlin", version.ref = "mviKotlin"}
+mvi-kotlin-main = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-main", version.ref = "mviKotlin"}
+mvi-kotlin-coroutine-ext = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-extensions-coroutines", version.ref = "mviKotlin"}
+
 essenty-lifecycle = { group = "com.arkivanov.essenty", name = "lifecycle", version.ref = "essenty" }
 
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
+
+coroutine-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutine"}
+coroutine-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "coroutine"}
