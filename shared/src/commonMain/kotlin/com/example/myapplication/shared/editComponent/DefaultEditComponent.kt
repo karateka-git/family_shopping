@@ -1,63 +1,65 @@
 package com.example.myapplication.shared.editComponent
 
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.decompose.value.MutableValue
-import com.arkivanov.decompose.value.Value
-import com.arkivanov.decompose.value.update
-import com.example.myapplication.shared.editComponent.EditComponent.EditState
-import com.example.myapplication.shared.main.MainInteractor
+import com.arkivanov.mvikotlin.core.binder.BinderLifecycleMode
+import com.arkivanov.mvikotlin.core.instancekeeper.getStore
+import com.arkivanov.mvikotlin.core.store.StoreFactory
+import com.arkivanov.mvikotlin.extensions.coroutines.bind
+import com.arkivanov.mvikotlin.extensions.coroutines.labels
+import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
+import com.example.myapplication.shared.editComponent.store.EditStore
+import com.example.myapplication.shared.editComponent.store.EditStoreProvider
 import com.example.myapplication.shared.models.ShoppingItem
+import com.example.myapplication.shared.util.appDispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.StateFlow
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 class DefaultEditComponent(
-    private val componentContext: ComponentContext,
+    componentContext: ComponentContext,
+    storeFactory: StoreFactory,
     private val mode: EditMode,
     private val onApplyEditItem: (item: ShoppingItem) -> Unit,
     private val onFinished: () -> Unit,
 ) : EditComponent, ComponentContext by componentContext, KoinComponent {
 
-    private val mainInteractor: MainInteractor by inject<MainInteractor>()
+    private val editStore =
+        instanceKeeper.getStore {
+            EditStoreProvider(
+                storeFactory = storeFactory,
+                mode = mode,
+            ).provide()
+        }
 
-    // Consider preserving and managing the state via a store
-    // для стейтов надо бы сторы создавать получая их так:
-    // private val store = instanceKeeper.getStore { ChatRootStore(storeFactory) }
-    private val _state = MutableValue(EditState())
-    override val state: Value<EditState> = _state
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override val state: StateFlow<EditStore.State> = editStore.stateFlow
 
     init {
-        when(mode) {
-            is EditMode.CreateNew ->
-                _state.update { it.copy(item = ShoppingItem(), editMode = mode) }
-            is EditMode.Edit -> {
-                val item = mainInteractor.getItem(mode.itemId)
-
-                if (item == null) {
-                    _state.update { it.copy(error = "Что-то пошло не так..", editMode = mode) }
-                } else {
-                    _state.update { it.copy(item = item.copy(isChecked = mode.isChecked), editMode = mode) }
+        bind(componentContext.lifecycle, BinderLifecycleMode.CREATE_DESTROY, appDispatchers.main) {
+            editStore.labels.bindTo {
+                when(it) {
+                    is EditStore.Label.FinishWithResult -> {
+                        onApplyEditItem(it.item)
+                        navigateToBack()
+                    }
                 }
             }
         }
     }
 
-    override fun onUpdateItem(text: String) {
-        _state.update { it.copy(item = it.item.copy(text = text)) }
+    override fun onUpdateText(text: String) {
+        editStore.accept(EditStore.Intent.UpdateText(text))
     }
 
-    override fun onApplyEdit() {
-        val currentItem = _state.value.item
-        val appliedItem = when (_state.value.editMode) {
-            is EditMode.Edit -> {
-                mainInteractor.updateItem(currentItem)
-                currentItem
-            }
-            is EditMode.CreateNew -> mainInteractor.createNewItem(currentItem)
-        }
-        onApplyEditItem(appliedItem)
-        onBackClicked()
+    override fun onUpdateIsChecked(isChecked: Boolean) {
+        editStore.accept(EditStore.Intent.UpdateIsChecked(isChecked))
     }
-    override fun onBackClicked() {
+
+
+    override fun onApplyEdit() {
+        editStore.accept(EditStore.Intent.ApplyEditItem)
+    }
+    override fun navigateToBack() {
         onFinished()
     }
 }

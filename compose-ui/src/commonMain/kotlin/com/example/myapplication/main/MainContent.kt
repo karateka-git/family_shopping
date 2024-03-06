@@ -68,7 +68,7 @@ internal fun MainContent(
             items(state.items) { item ->
                 ShoppingItemView(
                     item = item,
-                    onItemClick = { id, currentIsChecked ->  component.onEditItem(id, currentIsChecked) },
+                    onItemClick = { id ->  component.onEditItem(id) },
                     onChangeCheckedState = { isChecked ->
                         component.updateItem(item.copy(isChecked = isChecked))
                     },
@@ -127,29 +127,20 @@ private fun LazyListState.observeScrollingUp(previousState: Boolean, action: (Bo
     }
 }
 
-/**
- * @param onItemClick
- * - currentIsChecked
- * Чтобы избежать ситуации когда при переходе на экран `Edit`,
- * неправильное значение isChecked.
- * Такое возможно при долгом сохранении (если к примеру добавлю бэк).
- */
 @Composable
 fun ShoppingItemView(
     item: ShoppingItem,
-    onItemClick: (id: String, currentIsChecked: Boolean) -> Unit,
+    onItemClick: (id: String) -> Unit,
     onChangeCheckedState: (newIsCheckedState: Boolean) -> Unit,
 ) {
-    var isChecked by remember { mutableStateOf(item.isChecked) }
     Row(
         modifier = Modifier.fillMaxWidth().clickable {
-            onItemClick(item.id, isChecked)
+            onItemClick(item.id)
         }.padding(horizontal = 16.dp),
     ) {
         Text(modifier = Modifier.weight(1f), text = item.text)
-        Checkbox(checked = isChecked, onCheckedChange = {
-            isChecked = isChecked.not()
-            onChangeCheckedState(isChecked)
+        Checkbox(checked = item.isChecked, onCheckedChange = {
+            onChangeCheckedState(item.isChecked.not())
         })
     }
 }

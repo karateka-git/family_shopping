@@ -27,7 +27,7 @@ internal class MainStoreProvider(
 
     fun provide(): MainStore =
         object : MainStore, Store<Intent, State, Label> by storeFactory.create(
-            name = "TodoListStore",
+            name = "ShoppingListStore",
             initialState = State(),
             bootstrapper = SimpleBootstrapper(Action.Init),
             executorFactory = ::ExecutorImpl,
@@ -74,16 +74,16 @@ internal class MainStoreProvider(
 
                 if (item == updatedItem) return@launch
 
-                withContext(appDispatchers.io) {
-                    delay(500)
-                    mainInteractor.updateItem(updatedItem)
-                }
                 val updatedItems = associateByTo(mutableMapOf(), ShoppingItem::id).apply {
                     set(item.id, updatedItem)
                 }.values.toList()
 
                 withContext(appDispatchers.main) {
                     dispatch(Message.UpdateItems(updatedItems))
+                }
+
+                withContext(appDispatchers.io) {
+                    mainInteractor.updateItem(updatedItem)
                 }
             }
         }
@@ -94,7 +94,7 @@ internal class MainStoreProvider(
                 is Intent.UpdateItem -> executeAction(Action.UpdateItem(intent.item))
                 is Intent.AddItem -> dispatch(Message.AddItem(intent.newItem))
                 is Intent.RemoveItem -> TODO()
-                is Intent.EditItem -> publish(Label.OpenEditView(mode = EditMode.Edit(intent.id, intent.isChecked)))
+                is Intent.EditItem -> publish(Label.OpenEditView(mode = EditMode.Edit(intent.id)))
                 is Intent.CreateNewItem -> publish(Label.OpenEditView(mode = EditMode.CreateNew))
             }
         }

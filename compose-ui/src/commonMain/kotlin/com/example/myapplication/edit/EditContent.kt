@@ -20,6 +20,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,15 +31,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import com.example.myapplication.common.resources.icons.AppIcons
 import com.example.myapplication.common.resources.icons.painter
 import com.example.myapplication.common.views.TextMedium14
 import com.example.myapplication.shared.editComponent.EditComponent
 import com.example.myapplication.shared.editComponent.EditMode
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -46,15 +44,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomEditContent(component: EditComponent) {
-    val state by component.state.subscribeAsState()
-    var textFieldValue by remember { mutableStateOf(TextFieldValue(state.item.text)) }
-    LaunchedEffect(Unit) {
-        snapshotFlow { textFieldValue }
-            .collectLatest {
-                component.onUpdateItem(text = it.text)
-            }
-    }
-    var isChecked by remember { mutableStateOf(state.item.isChecked) }
+    val state by component.state.collectAsState()
 
     val sheetState: SheetState = rememberModalBottomSheetState()
     var expandedProgress by remember { mutableStateOf(0f) }
@@ -77,7 +67,7 @@ fun BottomEditContent(component: EditComponent) {
     val animateToDismiss: () -> Unit = {
         scope.launch { sheetState.hide() }.invokeOnCompletion {
             if (!sheetState.isVisible) {
-                component.onBackClicked()
+                component.navigateToBack()
             }
         }
     }
@@ -86,7 +76,7 @@ fun BottomEditContent(component: EditComponent) {
     ModalBottomSheet(
         modifier = Modifier.fillMaxSize(),
         onDismissRequest = {
-            component.onBackClicked()
+            component.navigateToBack()
         },
         sheetState = sheetState,
         shape = RoundedCornerShape(
@@ -119,17 +109,16 @@ fun BottomEditContent(component: EditComponent) {
                 when {
                     state.error != null -> TextMedium14(text = state.error.toString())
                     else -> {
-                        Checkbox(checked = isChecked, onCheckedChange = { isChecked = isChecked.not() })
+                        Checkbox(checked = state.item.isChecked, onCheckedChange = {
+                            component.onUpdateIsChecked(isChecked = it)
+                        })
                         TextField(
-                            value = textFieldValue,
-                            onValueChange = { textFieldValue = it }
+                            value = state.item.text,
+                            onValueChange = { component.onUpdateText(text = it) }
                         )
-                        Button(onClick = {
-                            component.onApplyEdit()
-
-                        }) {
+                        Button(onClick = { component.onApplyEdit() }) {
                             TextMedium14(
-                                text = when (state.editMode) {
+                                text = when (state.mode) {
                                     is EditMode.Edit -> "Сохранить"
                                     is EditMode.CreateNew -> "Создать"
                                 }

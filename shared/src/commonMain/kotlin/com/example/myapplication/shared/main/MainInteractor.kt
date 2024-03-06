@@ -24,26 +24,11 @@ class MainInteractor {
 
     fun getItems() = mockItems
 
-    fun onChangeCheckedState(id: String) {
-        val newItems = mutableListOf<ShoppingItem>().apply {
-            addAll(mockItems)
-        }
-        val index = newItems.indexOfFirst { it.id == id }
-        if (index > -1) {
-            val item = newItems.get(index)
-            newItems.set(
-                index = index,
-                item.copy(isChecked = item.isChecked.not())
-            )
-            mockItems = newItems
-        }
+    fun getItem(id: String): ShoppingItem {
+        return mockItems.first { id == it.id }
     }
 
-    fun getItem(id: String): ShoppingItem? {
-        return mockItems.firstOrNull { id == it.id }
-    }
-
-    fun updateItem(newItem: ShoppingItem) {
+    fun updateItem(newItem: ShoppingItem): ShoppingItem {
         val newItems = mockItems as MutableList
         val index = newItems.indexOfFirst { it.id == newItem.id }
         if (index > -1) {
@@ -53,6 +38,7 @@ class MainInteractor {
             )
         }
         mockItems = newItems
+        return newItem
     }
 
     fun createNewItem(item: ShoppingItem): ShoppingItem {

@@ -14,13 +14,8 @@ interface MainComponent {
     fun updateFABVisibleState(isVisible: Boolean)
     fun onRemoveItem(id: String)
     fun updateItem(item: ShoppingItem)
-    fun onEditItem(id: String, isChecked: Boolean)
+    fun onEditItem(id: String)
     fun onCreateNewItem()
-
-    data class MainState(
-        val items: List<ShoppingItem> = emptyList(),
-        val isVisibleFAB: Boolean = true,
-    )
 
     sealed class BottomChild {
         class BottomEditItem(val component: EditComponent) : BottomChild()

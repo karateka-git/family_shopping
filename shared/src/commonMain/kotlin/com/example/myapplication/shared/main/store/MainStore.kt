@@ -14,7 +14,7 @@ interface MainStore : Store<Intent, State, Label> {
         data class RemoveItem(val id: String) : Intent
         data class UpdateItem(val item: ShoppingItem) : Intent
         data class AddItem(val newItem: ShoppingItem) : Intent
-        data class EditItem(val id: String, val isChecked: Boolean) : Intent
+        data class EditItem(val id: String) : Intent
         data object CreateNewItem : Intent
     }
 

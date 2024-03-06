@@ -6,7 +6,6 @@ import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
-import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.parcelable.Parcelable
 import com.arkivanov.essenty.parcelable.Parcelize
@@ -19,7 +18,6 @@ import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.example.myapplication.shared.editComponent.DefaultEditComponent
 import com.example.myapplication.shared.editComponent.EditComponent
 import com.example.myapplication.shared.editComponent.EditMode
-import com.example.myapplication.shared.main.MainComponent.MainState
 import com.example.myapplication.shared.main.store.MainStore
 import com.example.myapplication.shared.main.store.MainStoreProvider
 import com.example.myapplication.shared.models.ShoppingItem
@@ -29,7 +27,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 class DefaultMainComponent(
     componentContext: ComponentContext,
-    storeFactory: StoreFactory,
+    private val storeFactory: StoreFactory,
 ) : MainComponent, ComponentContext by componentContext{
 
     private val mainStore =
@@ -57,7 +55,6 @@ class DefaultMainComponent(
             key = "BottomSlot",
             childFactory = ::bottomChild
         )
-    private val _state = MutableValue(MainState())
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val state: StateFlow<MainStore.State> = mainStore.stateFlow
@@ -74,8 +71,8 @@ class DefaultMainComponent(
         mainStore.accept(MainStore.Intent.UpdateItem(item))
     }
 
-    override fun onEditItem(id: String, isChecked: Boolean) {
-        mainStore.accept(MainStore.Intent.EditItem(id, isChecked))
+    override fun onEditItem(id: String) {
+        mainStore.accept(MainStore.Intent.EditItem(id))
     }
 
     override fun onCreateNewItem() {
@@ -91,6 +88,7 @@ class DefaultMainComponent(
     private fun editComponent(componentContext: ComponentContext, mode: EditMode): EditComponent =
         DefaultEditComponent(
             componentContext = componentContext,
+            storeFactory = storeFactory,
             mode = mode,
             onApplyEditItem = { item ->
                 when (mode) {
